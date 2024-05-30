@@ -6,7 +6,6 @@ import com.employee.management.models.Employee;
 import com.employee.management.repositories.DepartmentRepository;
 import com.employee.management.repositories.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +32,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee getEmployeeById(Long id) {
         return employeeRespository.findById(id).orElseThrow(() -> {
-                    log.error("Employee not found with id: {}", id);
+                    log.error("Employee not found with id: ", id);
                     return new EmployeeNotFoundException(id);
                 }
         );
@@ -41,11 +40,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee addEmployee(Employee employee) {
-        if(Objects.nonNull(employee.getDepartment()))
-        departmentRepository.findById(employee.getDepartment().getId()).orElseThrow(() -> {
-            log.error("Department not found with provided department id {} " + employee.getDepartment().getId());
-            return new DepartmentNotFoundException(employee.getDepartment().getId());
-        });
+        if (Objects.nonNull(employee.getDepartment())) {
+            var department = departmentRepository.findById(employee.getDepartment().getId()).orElseThrow(() -> {
+                log.error("Department not found with provided department id  " + employee.getDepartment().getId());
+                return new DepartmentNotFoundException(employee.getDepartment().getId());
+            });
+            employee.setDepartment(department);
+        }
         return employeeRespository.save(employee);
     }
 
@@ -53,7 +54,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee updateEmployee(Long id, Employee employee) {
         var existingEmployee = employeeRespository.findById(id).orElseThrow(() -> {
-            log.error("Employee not found with id: {}", id);
+            log.error("Employee not found with id: ", id);
             return new EmployeeNotFoundException(id);
         });
         existingEmployee.setName(employee.getName());

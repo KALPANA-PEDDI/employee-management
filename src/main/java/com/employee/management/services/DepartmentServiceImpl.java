@@ -4,7 +4,6 @@ import com.employee.management.exceptions.DepartmentNotFoundException;
 import com.employee.management.models.Department;
 import com.employee.management.repositories.DepartmentRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

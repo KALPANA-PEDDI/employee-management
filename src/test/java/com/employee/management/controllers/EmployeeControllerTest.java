@@ -30,8 +30,7 @@ class EmployeeControllerTest {
     @MockBean
     private EmployeeService employeeService;
 
-    @InjectMocks
-    private EmployeeController employeeController;
+    EmployeeController employeeController;
 
     private Employee employee;
 
@@ -41,6 +40,7 @@ class EmployeeControllerTest {
 
     @BeforeEach
     public void setUp() {
+        employeeController = new EmployeeController(employeeService);
         employee = new Employee();
         department = new Department();
         employee.setId(1L);

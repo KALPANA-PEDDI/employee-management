@@ -3,9 +3,9 @@ package com.employee.management.services;
 import com.employee.management.exceptions.DepartmentNotFoundException;
 import com.employee.management.models.Department;
 import com.employee.management.repositories.DepartmentRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,8 +24,12 @@ class DepartmentServiceTest {
     @MockBean
     private DepartmentRepository departmentRepository;
 
-    @InjectMocks
-    private DepartmentServiceImpl departmentService;
+    DepartmentServiceImpl departmentService;
+
+    @BeforeEach
+    void setUp() {
+        departmentService = new DepartmentServiceImpl(departmentRepository);
+    }
 
     @Test
     void testAddDepartment() {
@@ -46,8 +50,8 @@ class DepartmentServiceTest {
         when(departmentRepository.save(any(Department.class))).thenReturn(existingDepartment);
         var updatedDepartment = departmentService.updateDepartment(1, new Department(1, "HR"));
         assertEquals(existingDepartment, updatedDepartment);
-        assertEquals("HR",updatedDepartment.getDeptName() );
-        assertEquals(1,updatedDepartment.getId());
+        assertEquals("HR", updatedDepartment.getDeptName());
+        assertEquals(1, updatedDepartment.getId());
         verify(departmentRepository, times(1)).findById(1);
         verify(departmentRepository, times(1)).save(any(Department.class));
     }

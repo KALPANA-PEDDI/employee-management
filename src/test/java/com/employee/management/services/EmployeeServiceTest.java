@@ -1,12 +1,14 @@
 package com.employee.management.services;
 
+import com.employee.management.exceptions.DepartmentNotFoundException;
 import com.employee.management.exceptions.EmployeeNotFoundException;
+import com.employee.management.models.Department;
 import com.employee.management.models.Employee;
+import com.employee.management.repositories.DepartmentRepository;
 import com.employee.management.repositories.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
@@ -26,11 +28,18 @@ class EmployeeServiceTest {
     @MockBean
     private EmployeeRepository employeeRepository;
 
-    @InjectMocks
-    private EmployeeServiceImpl employeeService;
+    @MockBean
+    private DepartmentRepository departmentRepository;
+
+    EmployeeServiceImpl employeeService;
 
     @MockBean
     private Logger log;
+
+    @BeforeEach
+    void setUp() {
+        employeeService = new EmployeeServiceImpl(employeeRepository, departmentRepository);
+    }
 
     @Test
     void testGetEmployees() {
@@ -62,13 +71,40 @@ class EmployeeServiceTest {
     }
 
     @Test
-    void testAddEmployee() {
+     void testAddEmployeeWithValidDepartment() {
+        Department department = new Department();
+        department.setId(1);
+        when(departmentRepository.findById(anyInt())).thenReturn(java.util.Optional.of(department));
+
         Employee employee = new Employee();
+        employee.setDepartment(department);
+
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        Employee savedEmployee = employeeService.addEmployee(employee);
 
-        assertEquals(employee, employeeService.addEmployee(new Employee()));
+        verify(departmentRepository, times(1)).findById(1);
 
-        verify(employeeRepository, times(1)).save(any(Employee.class));
+        verify(employeeRepository, times(1)).save(employee);
+
+        assertEquals(employee, savedEmployee);
+    }
+
+    @Test
+     void testAddEmployeeWithInvalidDepartment() {
+        when(departmentRepository.findById(anyInt())).thenReturn(java.util.Optional.empty());
+
+        Employee employee = new Employee();
+        Department department = new Department();
+        department.setId(1);
+        employee.setDepartment(department);
+
+        assertThrows(DepartmentNotFoundException.class, () -> {
+            employeeService.addEmployee(employee);
+        });
+
+        verify(departmentRepository, times(1)).findById(1);
+
+        verify(employeeRepository, never()).save(employee);
     }
 
     @Test

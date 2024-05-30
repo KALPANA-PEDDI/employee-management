@@ -24,8 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class DepartmentControllerTest {
 
-    @InjectMocks
-    private DepartmentController departmentController;
+    DepartmentController departmentController;
 
     @MockBean
     private DepartmentService departmentService;
@@ -35,13 +34,13 @@ class DepartmentControllerTest {
 
     @BeforeEach
     void setup() {
+        departmentController = new DepartmentController(departmentService);
         mockMvc = MockMvcBuilders.standaloneSetup(departmentController).build();
         department = new Department(1, "IT");
     }
 
     @Test
     void testAddDepartment() throws Exception {
-        var department = new Department(1, "IT");
 
         mockMvc.perform(post("/departments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,7 +57,6 @@ class DepartmentControllerTest {
 
     @Test
     void testUpdateDepartment() throws Exception {
-        var department = new Department(1, "IT");
 
         mockMvc.perform(put("/departments/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
