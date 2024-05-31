@@ -12,8 +12,15 @@ import java.util.List;
 public class DepartmentExceptionHandler {
 
     @ExceptionHandler(DepartmentNotFoundException.class)
-    public ResponseEntity<Object> handleDepartmentException(DepartmentNotFoundException departmentNotFoundException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionConstants.DEPARTMENT_NOT_FOUND + departmentNotFoundException.getDepartmentId());
+    public ResponseEntity<ErrorResponse> handleDepartmentNotFoundException(DepartmentNotFoundException departmentNotFoundException) {
+        var error = new ErrorResponse(ExceptionConstants.DEPARTMENT_NOT_FOUND + departmentNotFoundException.getDepartmentId());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DepartmentAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleDepartmentAlreadyExistsException(DepartmentAlreadyExistsException departmentNotFoundException) {
+        var error = new ErrorResponse(ExceptionConstants.DEPARTMENT_ALREADY_EXISTS + departmentNotFoundException.getDepartmentId());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

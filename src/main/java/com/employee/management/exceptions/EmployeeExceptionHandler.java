@@ -14,9 +14,17 @@ import java.util.List;
 public class EmployeeExceptionHandler {
 
     @ExceptionHandler(EmployeeNotFoundException.class)
-    public ResponseEntity<Object> handleEmployeeNotFoundException(EmployeeNotFoundException employeeNotFoundException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionConstants.EMPLOYEE_NOT_FOUND + employeeNotFoundException.getEmployeeId());
+    public ResponseEntity<ErrorResponse> handleEmployeeNotFoundException(EmployeeNotFoundException employeeNotFoundException) {
+        var error = new ErrorResponse(ExceptionConstants.EMPLOYEE_NOT_FOUND + employeeNotFoundException.getEmployeeId());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
 
+    }
+
+    @ExceptionHandler(EmployeeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmployeeAlreadyExists(EmployeeAlreadyExistsException employeeAlreadyExistsException) {
+
+        var error = new ErrorResponse(ExceptionConstants.EMPLOYEE_ALREADY_EXISTS + employeeAlreadyExistsException.getEmployeeId());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,7 +1,10 @@
 package com.employee.management.services;
 
 import com.employee.management.exceptions.DepartmentNotFoundException;
+import com.employee.management.exceptions.EmployeeAlreadyExistsException;
 import com.employee.management.exceptions.EmployeeNotFoundException;
+import com.employee.management.exceptions.ExceptionConstants;
+import com.employee.management.models.Department;
 import com.employee.management.models.Employee;
 import com.employee.management.repositories.DepartmentRepository;
 import com.employee.management.repositories.EmployeeRepository;
@@ -32,30 +35,35 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee getEmployeeById(Long id) {
         return employeeRespository.findById(id).orElseThrow(() -> {
-                    log.error("Employee not found with id: ", id);
-                    return new EmployeeNotFoundException(id);
+                    log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
+                    throw new EmployeeNotFoundException(id);
                 }
         );
     }
 
     @Override
     public Employee addEmployee(Employee employee) {
-        if (Objects.nonNull(employee.getDepartment())) {
-            var department = departmentRepository.findById(employee.getDepartment().getId()).orElseThrow(() -> {
-                log.error("Department not found with provided department id  " + employee.getDepartment().getId());
-                return new DepartmentNotFoundException(employee.getDepartment().getId());
-            });
-            employee.setDepartment(department);
+        if (employeeRespository.existsById(employee.getId())) {
+            throw new EmployeeAlreadyExistsException(employee.getId());
+        } else {
+            if (Objects.nonNull(employee.getDepartment())) {
+                Department department = departmentRepository.findById(employee.getDepartment().getId())
+                        .orElseThrow(() -> {
+                            log.error(ExceptionConstants.DEPARTMENT_NOT_FOUND + employee.getDepartment().getId());
+                            return new DepartmentNotFoundException(employee.getDepartment().getId());
+                        });
+                employee.setDepartment(department);
+            }
+            return employeeRespository.save(employee);
         }
-        return employeeRespository.save(employee);
     }
 
     @Transactional
     @Override
     public Employee updateEmployee(Long id, Employee employee) {
         var existingEmployee = employeeRespository.findById(id).orElseThrow(() -> {
-            log.error("Employee not found with id: ", id);
-            return new EmployeeNotFoundException(id);
+            log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
+            throw new EmployeeNotFoundException(id);
         });
         existingEmployee.setName(employee.getName());
         existingEmployee.setAddress(employee.getAddress());
@@ -66,15 +74,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deleteEmployee(Long id) {
-        try {
-            if (!employeeRespository.existsById(id)) {
-                throw new EmployeeNotFoundException(id);
-            }
-            employeeRespository.deleteById(id);
-        } catch (EmployeeNotFoundException ex) {
-            log.error("Error: Deleting employee with id not found : {}", ex.getMessage());
-        } catch (Exception ex) {
-            log.error("Error deleting employee with id : {}", id, ex);
+        if (!employeeRespository.existsById(id)) {
+            log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
+            throw new EmployeeNotFoundException(id);
         }
+        employeeRespository.deleteById(id);
     }
 }

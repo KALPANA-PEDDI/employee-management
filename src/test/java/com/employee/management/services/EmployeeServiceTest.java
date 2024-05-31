@@ -1,7 +1,9 @@
 package com.employee.management.services;
 
 import com.employee.management.exceptions.DepartmentNotFoundException;
+import com.employee.management.exceptions.EmployeeAlreadyExistsException;
 import com.employee.management.exceptions.EmployeeNotFoundException;
+import com.employee.management.exceptions.ExceptionConstants;
 import com.employee.management.models.Department;
 import com.employee.management.models.Employee;
 import com.employee.management.repositories.DepartmentRepository;
@@ -33,11 +35,16 @@ class EmployeeServiceTest {
 
     EmployeeServiceImpl employeeService;
 
+    Employee employee;
+
     @MockBean
     private Logger log;
 
     @BeforeEach
     void setUp() {
+        employee = new Employee();
+        employee.setId(1L);
+
         employeeService = new EmployeeServiceImpl(employeeRepository, departmentRepository);
     }
 
@@ -50,8 +57,6 @@ class EmployeeServiceTest {
 
     @Test
     void testGetEmployeeById() {
-        Employee employee = new Employee();
-        employee.setId(1L);
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 
         assertEquals(1L, employeeService.getEmployeeById(1L).getId());
@@ -71,12 +76,11 @@ class EmployeeServiceTest {
     }
 
     @Test
-     void testAddEmployeeWithValidDepartment() {
+    void testAddEmployeeWithValidDepartment() {
         Department department = new Department();
         department.setId(1);
         when(departmentRepository.findById(anyInt())).thenReturn(java.util.Optional.of(department));
 
-        Employee employee = new Employee();
         employee.setDepartment(department);
 
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
@@ -90,10 +94,20 @@ class EmployeeServiceTest {
     }
 
     @Test
-     void testAddEmployeeWithInvalidDepartment() {
+    void addEmployee_employeeAlreadyExists_shouldThrowException() {
+
+        when(employeeRepository.existsById(employee.getId())).thenReturn(true);
+
+        assertThrows(EmployeeAlreadyExistsException.class, () -> {
+            employeeService.addEmployee(employee);
+        });
+        verify(log, never()).error(anyString());
+    }
+
+    @Test
+    void testAddEmployeeWithInvalidDepartment() {
         when(departmentRepository.findById(anyInt())).thenReturn(java.util.Optional.empty());
 
-        Employee employee = new Employee();
         Department department = new Department();
         department.setId(1);
         employee.setDepartment(department);
@@ -109,12 +123,10 @@ class EmployeeServiceTest {
 
     @Test
     void testUpdateEmployee() {
-        Employee existingEmployee = new Employee();
-        existingEmployee.setId(1L);
-        when(employeeRepository.findById(1L)).thenReturn(Optional.of(existingEmployee));
-        when(employeeRepository.save(any(Employee.class))).thenReturn(existingEmployee);
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-        assertEquals(existingEmployee, employeeService.updateEmployee(1L, new Employee()));
+        assertEquals(employee, employeeService.updateEmployee(1L, new Employee()));
 
         verify(employeeRepository, times(1)).findById(1L);
         verify(employeeRepository, times(1)).save(any(Employee.class));
@@ -133,8 +145,6 @@ class EmployeeServiceTest {
 
     @Test
     void testDeleteEmployee() {
-        Employee existingEmployee = new Employee();
-        existingEmployee.setId(1L);
         when(employeeRepository.existsById(1L)).thenReturn(true);
 
         employeeService.deleteEmployee(1L);
@@ -144,10 +154,10 @@ class EmployeeServiceTest {
     }
 
     @Test
-    void deleteEmployee_WhenEmployeeNotExists_ShouldLogError() {
+    void deleteEmployee_WhenEmployeeNotExists() {
         when(employeeRepository.existsById(anyLong())).thenReturn(false);
-
-        employeeService.deleteEmployee(1L);
+        assertThrows(EmployeeNotFoundException.class, () ->
+                employeeService.deleteEmployee(2L));
 
         verify(employeeRepository, never()).deleteById(anyLong());
 

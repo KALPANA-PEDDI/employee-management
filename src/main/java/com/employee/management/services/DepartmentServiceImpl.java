@@ -1,6 +1,9 @@
 package com.employee.management.services;
 
+import com.employee.management.exceptions.DepartmentAlreadyExistsException;
 import com.employee.management.exceptions.DepartmentNotFoundException;
+import com.employee.management.exceptions.EmployeeAlreadyExistsException;
+import com.employee.management.exceptions.ExceptionConstants;
 import com.employee.management.models.Department;
 import com.employee.management.repositories.DepartmentRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +22,16 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department addDepartment(Department department) {
-        return departmentRepository.save(department);
+        if (departmentRepository.existsById(department.getId())) {
+            throw new DepartmentAlreadyExistsException(department.getId());
+        } else
+            return departmentRepository.save(department);
     }
 
     @Override
     public Department updateDepartment(int id, Department department) {
         var existingDepartment = departmentRepository.findById(id).orElseThrow(() -> {
-            log.error("Department not found with provided id {} " + id);
+            log.error(ExceptionConstants.DEPARTMENT_NOT_FOUND + id);
             return new DepartmentNotFoundException(id);
         });
         existingDepartment.setDeptName(department.getDeptName());

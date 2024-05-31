@@ -32,12 +32,8 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
-        try {
-            Employee employee = employeeService.getEmployeeById(id);
-            return ResponseEntity.ok(employee);
-        } catch (EmployeeNotFoundException ex) {
-            return ResponseEntity.notFound().build();
-        }
+        Employee employee = employeeService.getEmployeeById(id);
+        return ResponseEntity.ok(employee);
     }
 
     @PostMapping
@@ -54,12 +50,9 @@ public class EmployeeController {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body("Validation error: " + result.getAllErrors());
         }
-        try {
-            Employee updatedEmployee = employeeService.updateEmployee(id, newEmployeeData);
-            return ResponseEntity.ok(updatedEmployee);
-        } catch (EmployeeNotFoundException ex) {
-            return ResponseEntity.notFound().build();
-        }
+        Employee updatedEmployee = employeeService.updateEmployee(id, newEmployeeData);
+        return ResponseEntity.ok(updatedEmployee);
+
     }
 
     @DeleteMapping("/{id}")

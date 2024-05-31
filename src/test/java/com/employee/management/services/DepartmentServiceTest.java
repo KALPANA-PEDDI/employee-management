@@ -1,6 +1,8 @@
 package com.employee.management.services;
 
+import com.employee.management.exceptions.DepartmentAlreadyExistsException;
 import com.employee.management.exceptions.DepartmentNotFoundException;
+import com.employee.management.exceptions.EmployeeAlreadyExistsException;
 import com.employee.management.models.Department;
 import com.employee.management.repositories.DepartmentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,7 @@ class DepartmentServiceTest {
 
     DepartmentServiceImpl departmentService;
 
+
     @BeforeEach
     void setUp() {
         departmentService = new DepartmentServiceImpl(departmentRepository);
@@ -39,6 +42,17 @@ class DepartmentServiceTest {
         assertEquals(department, departmentService.addDepartment(new Department()));
 
         verify(departmentRepository, times(1)).save(any(Department.class));
+    }
+
+    @Test
+    void addDepartment_departmentAlreadyExists_shouldThrowException() {
+        var department = new Department();
+
+        when(departmentRepository.existsById(department.getId())).thenReturn(true);
+
+        assertThrows(DepartmentAlreadyExistsException.class, () -> {
+            departmentService.addDepartment(department);
+        });
     }
 
     @Test
