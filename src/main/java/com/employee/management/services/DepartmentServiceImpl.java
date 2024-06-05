@@ -2,7 +2,6 @@ package com.employee.management.services;
 
 import com.employee.management.exceptions.DepartmentAlreadyExistsException;
 import com.employee.management.exceptions.DepartmentNotFoundException;
-import com.employee.management.exceptions.EmployeeAlreadyExistsException;
 import com.employee.management.exceptions.ExceptionConstants;
 import com.employee.management.models.Department;
 import com.employee.management.repositories.DepartmentRepository;
@@ -22,6 +21,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department addDepartment(Department department) {
+        log.info("Adding department with department id " + department.getId());
         if (departmentRepository.existsById(department.getId())) {
             throw new DepartmentAlreadyExistsException(department.getId());
         } else
@@ -30,6 +30,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department updateDepartment(int id, Department department) {
+        log.info("Updating department with department id " + id);
         var existingDepartment = departmentRepository.findById(id).orElseThrow(() -> {
             log.error(ExceptionConstants.DEPARTMENT_NOT_FOUND + id);
             return new DepartmentNotFoundException(id);

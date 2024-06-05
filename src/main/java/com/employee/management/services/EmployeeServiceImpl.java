@@ -29,11 +29,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> getAllEmployees() {
+        log.info("Get all employees");
         return (employeeRespository.findAll());
     }
 
     @Override
     public Employee getEmployeeById(Long id) {
+        log.info("Fetching employee details with employee id " + id);
         return employeeRespository.findById(id).orElseThrow(() -> {
                     log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
                     throw new EmployeeNotFoundException(id);
@@ -43,6 +45,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee addEmployee(Employee employee) {
+        log.info("Adding new employee with employee id" + employee.getId());
         if (employeeRespository.existsById(employee.getId())) {
             throw new EmployeeAlreadyExistsException(employee.getId());
         } else {
@@ -61,6 +64,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Override
     public Employee updateEmployee(Long id, Employee employee) {
+        log.info("Updating employee with employee id " + id);
         var existingEmployee = employeeRespository.findById(id).orElseThrow(() -> {
             log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
             throw new EmployeeNotFoundException(id);
@@ -74,6 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deleteEmployee(Long id) {
+        log.info("Deleting employee with employee id " + id);
         if (!employeeRespository.existsById(id)) {
             log.error(ExceptionConstants.EMPLOYEE_NOT_FOUND + id);
             throw new EmployeeNotFoundException(id);
